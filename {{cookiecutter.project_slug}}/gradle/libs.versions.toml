@@ -1,0 +1,18 @@
+# Version catalog is a central place for you to declare and version dependencies
+# https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
+# https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
+
+[versions]
+kotlin = "{{ cookiecutter.kotlin_version }}"
+quarkus = "{{ cookiecutter.quarkus_version }}"
+
+[libraries]
+# Gradle plugins consumed on the buildSrc classpath so convention plugins can apply them by id.
+kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlinAllopenPlugin = { module = "org.jetbrains.kotlin.plugin.allopen:org.jetbrains.kotlin.plugin.allopen.gradle.plugin", version.ref = "kotlin" }
+quarkusGradlePlugin = { module = "io.quarkus:io.quarkus.gradle.plugin", version.ref = "quarkus" }
+
+[plugins]
+# The Quarkus extension plugin builds the runtime module of an extension
+# (generates the extension descriptor and Jandex index). Applied in runtime/.
+quarkusExtension = { id = "io.quarkus.extension", version.ref = "quarkus" }

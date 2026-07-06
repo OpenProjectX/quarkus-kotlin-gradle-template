@@ -1,0 +1,17 @@
+{
+  "project_name": "My Quarkus Extension",
+  "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '-') }}",
+  "group_id": "org.openprojectx.{{ cookiecutter.project_slug.replace('-', '.') }}",
+  "library_name": "core",
+  "main_class_name": "{{ cookiecutter.project_slug.replace('-', ' ').title().replace(' ', '') }}",
+  "description": "{{ cookiecutter.project_slug.upper() }} Quarkus extension",
+  "github_username": "OpenProjectX",
+  "github_repo": "{{ cookiecutter.project_slug }}",
+  "developer_id": "OpenProjectX",
+  "developer_name": "OpenProjectX",
+  "developer_email": "admin@openprojectx.org",
+  "kotlin_version": "2.4.0",
+  "quarkus_version": "3.37.1",
+  "java_version": "17",
+  "_copy_without_render": ["*.jar"]
+}

@@ -1,0 +1,8 @@
+quarkus:
+  application:
+    name: {{ cookiecutter.project_slug }}
+
+# Configuration consumed by the extension ({{ cookiecutter.main_class_name }}Config).
+# Uncomment to override the extension's default greeting:
+# {{ cookiecutter.project_slug }}:
+#   message: "Hello from application.yaml"
