@@ -44,7 +44,11 @@ Copies the repo as-is (with `{{cookiecutter.*}}` placeholders) — you must then
 ```
 <project_slug>/
 ├── app/                                  # Example Quarkus app that consumes the extension
-│   └── src/main/kotlin/…/app/…Resource.kt
+│   └── src/main/kotlin/…/app/…Resource.kt #   + Quinoa config in application.yaml
+├── webui/                                # Independent Vite + React SPA (built & served by the app via Quinoa)
+│   ├── build.gradle.kts                  #   (base plugin; the UI is built by the app's Quinoa)
+│   ├── package.json · vite.config.js · index.html
+│   └── src/                              #   main.jsx, App.jsx (calls /greeting/{name})
 ├── core/                                 # Framework-agnostic Kotlin library (re-exported by runtime)
 ├── runtime/                              # Extension RUNTIME module = the "starter"
 │   ├── <project_slug>.gradle.kts         #   -> artifactId: <project_slug>
@@ -83,6 +87,19 @@ curl localhost:8080/greeting/world
 
 At startup you'll see your extension listed in the Quarkus **Installed features** banner (from the `FeatureBuildItem`).
 
+## Frontend (Quinoa + React)
+
+The `webui/` module is an independent **Vite + React** single-page app. The `app` module depends on the [Quinoa](https://quarkiverse.github.io/quarkiverse-docs/quarkus-quinoa/dev/) extension and points it at that module (`quarkus.quinoa.ui-dir = ../webui`), so Quarkus builds and serves the UI — no separate frontend server to run. The demo UI calls the extension's `/greeting/{name}` endpoint, so it exercises **React → Quarkus REST → extension bean → config** end to end.
+
+```bash
+./gradlew :app:quarkusDev    # dev mode: Quinoa runs the Vite dev server and live-reloads the UI
+./gradlew :app:build         # prod: Quinoa runs `npm install` + `vite build`, bundling dist/ into the app
+```
+
+Open <http://localhost:8080/> for the UI; the same origin serves `GET /greeting/{name}`.
+
+> Requires **Node.js/npm** (Quinoa can also auto-provision Node). To work on the UI alone: `cd webui && npm install && npm run dev`.
+
 ## Where to add your code
 
 - **Runtime beans / config** → `runtime/src/main/kotlin/…/runtime/`
@@ -119,3 +136,4 @@ export SIGNING_KEY_PASSWORD=...
 ## Tech stack
 
 - Kotlin 2.4.0 · Quarkus 3.37.1 · Gradle 9.5.1 · Java 17 toolchain
+- Frontend: Quinoa 2.8.3 · Vite 5 · React 18

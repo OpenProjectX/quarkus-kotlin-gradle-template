@@ -17,5 +17,10 @@ dependencies {
     // Needed to read application.yaml (Quarkus reads .properties out of the box).
     implementation("io.quarkus:quarkus-config-yaml")
 
+    // Quinoa builds the React app in the sibling `webui` module and serves it
+    // from this app (see quarkus.quinoa.* in application.yaml). Version is not
+    // managed by quarkus-bom, so it comes from the version catalog.
+    implementation(libs.quarkusQuinoa)
+
     testImplementation("io.quarkus:quarkus-junit5")
 }

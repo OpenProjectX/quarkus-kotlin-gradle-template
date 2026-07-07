@@ -2,6 +2,15 @@ quarkus:
   application:
     name: {{ cookiecutter.project_slug }}
 
+  # Quinoa: build & serve the React app from the independent `webui` module.
+  quinoa:
+    # The web UI lives in a separate Gradle module, resolved relative to this app.
+    ui-dir: ../webui
+    # Vite emits the production bundle into `dist`.
+    build-dir: dist
+    # Serve index.html for unknown paths so client-side (SPA) routing works.
+    enable-spa-routing: true
+
 # Configuration consumed by the extension ({{ cookiecutter.main_class_name }}Config).
 # Uncomment to override the extension's default greeting:
 # {{ cookiecutter.project_slug }}:

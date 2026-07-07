@@ -5,9 +5,13 @@
 [versions]
 kotlin = "{{ cookiecutter.kotlin_version }}"
 quarkus = "{{ cookiecutter.quarkus_version }}"
+quinoa = "2.8.3"
 
 [libraries]
 # Gradle plugins consumed on the buildSrc classpath so convention plugins can apply them by id.
+# Quinoa: Quarkiverse extension that builds & serves the React web UI (webui module).
+quarkusQuinoa = { module = "io.quarkiverse.quinoa:quarkus-quinoa", version.ref = "quinoa" }
+
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlinAllopenPlugin = { module = "org.jetbrains.kotlin.plugin.allopen:org.jetbrains.kotlin.plugin.allopen.gradle.plugin", version.ref = "kotlin" }
 quarkusGradlePlugin = { module = "io.quarkus:io.quarkus.gradle.plugin", version.ref = "quarkus" }
