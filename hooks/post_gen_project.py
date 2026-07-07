@@ -20,6 +20,9 @@ package_path = group_id.replace(".", "/")
 # (gradle module dir, sub-package, flat source file name placed by Cookiecutter)
 moves = [
     ("app", "app", f"{main_class_name}Resource.kt"),
+    ("app", "app", "Todo.kt"),
+    ("app", "app", "TodoService.kt"),
+    ("app", "app", "TodoResource.kt"),
     ("runtime", "runtime", f"{main_class_name}Config.kt"),
     ("runtime", "runtime", f"{main_class_name}Service.kt"),
     ("deployment", "deployment", f"{main_class_name}Processor.kt"),

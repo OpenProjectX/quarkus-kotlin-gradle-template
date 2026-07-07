@@ -6,10 +6,40 @@ quarkus:
   quinoa:
     # The web UI lives in a separate Gradle module, resolved relative to this app.
     ui-dir: ../webui
+    # Use Bun as the package manager (default is lockfile auto-detect -> npm).
+    package-manager: bun
+    # NOTE: Bun auto-provisioning is configured in application.properties, because
+    # `quarkus.quinoa.package-manager-install` is both the on/off flag and the
+    # parent of `bun-version` (@WithParentName) — a shape YAML can't express.
     # Vite emits the production bundle into `dist`.
     build-dir: dist
     # Serve index.html for unknown paths so client-side (SPA) routing works.
     enable-spa-routing: true
+
+  # Reactive Postgres. No URL is set, so Dev Services starts a throwaway
+  # container in dev/test mode. One container is shared by the reactive client
+  # (Hibernate Reactive) and the JDBC client (Liquibase migrations).
+  datasource:
+    db-kind: postgresql
+    devservices:
+      # Swap for any postgres image you prefer.
+      image-name: ghcr.io/openprojectx/dockerhub/library/postgres:18.4-trixie
+    jdbc:
+      max-size: 8       # used by Liquibase
+    reactive:
+      max-size: 20      # used by Hibernate Reactive at runtime
+
+  # Liquibase owns the schema and runs on the JDBC datasource at boot.
+  liquibase:
+    migrate-at-start: true
+    change-log: db/changelog/db.changelog-master.yaml
+
+  hibernate-orm:
+    # Liquibase manages DDL, so Hibernate must not create/drop the schema.
+    database:
+      generation: none
+    log:
+      sql: true
 
 # Configuration consumed by the extension ({{ cookiecutter.main_class_name }}Config).
 # Uncomment to override the extension's default greeting:

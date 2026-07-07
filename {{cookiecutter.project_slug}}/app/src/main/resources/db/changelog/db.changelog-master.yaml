@@ -1,0 +1,43 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1-create-todo-table
+      author: demo
+      changes:
+        - createTable:
+            tableName: todo
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: title
+                  type: varchar(255)
+              - column:
+                  name: completed
+                  type: boolean
+                  defaultValueBoolean: false
+              - column:
+                  name: priority
+                  type: integer
+                  defaultValueNumeric: 0
+
+  - changeSet:
+      id: 2-seed-todo-data
+      author: demo
+      changes:
+        - insert:
+            tableName: todo
+            columns:
+              - column: { name: title, value: "Learn Quarkus extensions" }
+              - column: { name: completed, valueBoolean: true }
+              - column: { name: priority, valueNumeric: 1 }
+        - insert:
+            tableName: todo
+            columns:
+              - column: { name: title, value: "Build a reactive CRUD" }
+              - column: { name: completed, valueBoolean: false }
+              - column: { name: priority, valueNumeric: 2 }

@@ -44,11 +44,12 @@ Copies the repo as-is (with `{{cookiecutter.*}}` placeholders) — you must then
 ```
 <project_slug>/
 ├── app/                                  # Example Quarkus app that consumes the extension
-│   └── src/main/kotlin/…/app/…Resource.kt #   + Quinoa config in application.yaml
-├── webui/                                # Independent Vite + React SPA (built & served by the app via Quinoa)
+│   ├── src/main/kotlin/…/app/            #   …Resource.kt (greeting); Todo.kt + TodoService.kt + TodoResource.kt (reactive CRUD)
+│   └── src/main/resources/              #   application.yaml (Quinoa + datasource + Liquibase); db/changelog/…
+├── webui/                                # Independent Vite 8 + React 19 SPA (Bun; built & served by the app via Quinoa)
 │   ├── build.gradle.kts                  #   (base plugin; the UI is built by the app's Quinoa)
 │   ├── package.json · vite.config.js · index.html
-│   └── src/                              #   main.jsx, App.jsx (calls /greeting/{name})
+│   └── src/                              #   main.jsx, App.jsx (greeting + Todos CRUD)
 ├── core/                                 # Framework-agnostic Kotlin library (re-exported by runtime)
 ├── runtime/                              # Extension RUNTIME module = the "starter"
 │   ├── <project_slug>.gradle.kts         #   -> artifactId: <project_slug>
@@ -89,16 +90,39 @@ At startup you'll see your extension listed in the Quarkus **Installed features*
 
 ## Frontend (Quinoa + React)
 
-The `webui/` module is an independent **Vite + React** single-page app. The `app` module depends on the [Quinoa](https://quarkiverse.github.io/quarkiverse-docs/quarkus-quinoa/dev/) extension and points it at that module (`quarkus.quinoa.ui-dir = ../webui`), so Quarkus builds and serves the UI — no separate frontend server to run. The demo UI calls the extension's `/greeting/{name}` endpoint, so it exercises **React → Quarkus REST → extension bean → config** end to end.
+The `webui/` module is an independent **Vite 8 + React 19** single-page app, using **Bun** as the package manager. The `app` module depends on the [Quinoa](https://quarkiverse.github.io/quarkiverse-docs/quarkus-quinoa/dev/) extension and points it at that module (`quarkus.quinoa.ui-dir = ../webui`, `package-manager = bun`), so Quarkus builds and serves the UI — no separate frontend server to run. The demo UI calls the extension's `/greeting/{name}` endpoint, so it exercises **React → Quarkus REST → extension bean → config** end to end.
 
 ```bash
 ./gradlew :app:quarkusDev    # dev mode: Quinoa runs the Vite dev server and live-reloads the UI
-./gradlew :app:build         # prod: Quinoa runs `npm install` + `vite build`, bundling dist/ into the app
+./gradlew :app:build         # prod: Quinoa runs `bun install` + `bun run build`, bundling dist/ into the app
 ```
 
 Open <http://localhost:8080/> for the UI; the same origin serves `GET /greeting/{name}`.
 
-> Requires **Node.js/npm** (Quinoa can also auto-provision Node). To work on the UI alone: `cd webui && npm install && npm run dev`.
+> **No local Bun needed** — Quinoa auto-provisions the pinned Bun version (configured in
+> `application.properties`) and downloads it once into `app/.quinoa/`, reused on later builds
+> (it survives `gradle clean`, so it isn't re-downloaded). To work on the UI alone with your own
+> Bun: `cd webui && bun install && bun run dev`.
+
+## Reactive CRUD (Postgres + Liquibase + Dev Services)
+
+The app also includes a **fully reactive** CRUD demo — web to DB, nothing blocks — using Hibernate Reactive Panache (Kotlin) + Mutiny over the reactive Postgres client, with **Liquibase** owning the schema and **Dev Services** starting a throwaway Postgres container automatically.
+
+- `Todo.kt` — reactive Panache entity (`PanacheEntityBase` + `PanacheCompanion`), IDENTITY id aligned with Liquibase `autoIncrement`.
+- `TodoService.kt` — `Uni`-returning methods with `@WithSession` (reads) / `@WithTransaction` (writes).
+- `TodoResource.kt` — `GET/POST/PUT/DELETE /todos`, all returning `Uni`.
+- `db/changelog/db.changelog-master.yaml` — creates the `todo` table + seed rows (`migrate-at-start`).
+- Hibernate is set to `generation: none` — Liquibase owns DDL. One Dev Services container is shared by the reactive client (Hibernate Reactive) and the JDBC client (Liquibase).
+
+```bash
+./gradlew :app:quarkusDev        # Dev Services starts Postgres; Liquibase migrates at boot
+curl localhost:8080/todos
+curl -X POST localhost:8080/todos -H 'Content-Type: application/json' \
+  -d '{"title":"Try it","completed":false,"priority":1}'
+```
+
+> Requires **Docker** (for Dev Services) in dev/test. The Postgres image is set via
+> `quarkus.datasource.devservices.image-name` in `application.yaml` — change it to any Postgres image.
 
 ## Where to add your code
 
@@ -136,4 +160,5 @@ export SIGNING_KEY_PASSWORD=...
 ## Tech stack
 
 - Kotlin 2.4.0 · Quarkus 3.37.1 · Gradle 9.5.1 · Java 17 toolchain
-- Frontend: Quinoa 2.8.3 · Vite 5 · React 18
+- Persistence: Hibernate Reactive Panache (Kotlin) · Mutiny · Reactive PG client · Liquibase · Postgres Dev Services
+- Frontend: Quinoa 2.8.3 · Vite 8 · React 19 · Bun
