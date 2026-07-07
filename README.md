@@ -9,7 +9,7 @@ This is the Quarkus counterpart of the Spring Boot *starter + autoconfigure* tem
 | `*-spring-boot-starter` (the dependency users add) | Extension **runtime** module | `runtime/` |
 | `*-spring-boot-autoconfigure` (`@Configuration` + `@ConditionalOn…`) | Extension **deployment** module (`@BuildStep` processors) | `deployment/` |
 | Runtime condition evaluation at every startup | **Build-time augmentation** (baked into bytecode) | — |
-| `@Value` / `@ConfigurationProperties` | `@ConfigProperty` (MicroProfile Config) | `runtime/…Service.kt` |
+| `@ConfigurationProperties` | `@ConfigMapping` + `@ConfigRoot` | `runtime/…Config.kt` |
 
 The key difference: Quarkus does the "auto-configuration" work once at **build time**, which is why it starts in milliseconds and compiles to native.
 
@@ -20,10 +20,17 @@ The key difference: Quarkus does the "auto-configuration" work once at **build t
 ```bash
 pipx install cookiecutter        # or: brew install cookiecutter / pip install cookiecutter
 
+# From GitHub:
+cookiecutter gh:OpenProjectX/quarkus-kotlin-gradle-template
+
+# Or with the full URL:
+cookiecutter https://github.com/OpenProjectX/quarkus-kotlin-gradle-template.git
+
+# Pin to a released tag:
+cookiecutter gh:OpenProjectX/quarkus-kotlin-gradle-template --checkout v1.0.0
+
 # From a local clone:
 cookiecutter path/to/quarkus-kotlin-gradle-template
-# From GitHub:
-cookiecutter gh:openprojectx/quarkus-kotlin-gradle-template
 ```
 
 Cookiecutter prompts for each variable, then generates a ready-to-build project.
@@ -41,7 +48,7 @@ Copies the repo as-is (with `{{cookiecutter.*}}` placeholders) — you must then
 ├── core/                                 # Framework-agnostic Kotlin library (re-exported by runtime)
 ├── runtime/                              # Extension RUNTIME module = the "starter"
 │   ├── <project_slug>.gradle.kts         #   -> artifactId: <project_slug>
-│   └── src/main/kotlin/…/runtime/        #   …Service.kt (@ApplicationScoped bean, @ConfigProperty)
+│   └── src/main/kotlin/…/runtime/        #   …Config.kt (@ConfigMapping + @ConfigRoot), …Service.kt (@ApplicationScoped)
 ├── deployment/                           # Extension DEPLOYMENT module = the "autoconfigure"
 │   ├── <project_slug>-deployment.gradle.kts  # -> artifactId: <project_slug>-deployment
 │   └── src/main/kotlin/…/deployment/     #   …Processor.kt (@BuildStep methods)
@@ -64,7 +71,7 @@ Quarkus requires the deployment artifact to be named `<runtime-artifactId>-deplo
 
 ## What the generated sample does
 
-The extension contributes a `…Service` bean (its greeting is configurable via `@ConfigProperty`) that the deployment module registers with an `AdditionalBeanBuildItem`. The example app injects it in a REST resource:
+The extension contributes a `…Service` bean (configured via a type-safe `@ConfigMapping` + `@ConfigRoot` interface) that the deployment module registers with an `AdditionalBeanBuildItem`. The example app injects it in a REST resource:
 
 ```bash
 ./gradlew build                 # builds core, runtime (extension), deployment, and the app
